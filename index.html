@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Network - Ghana</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles - Collapsible */
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, #0a1628 0%, #1a365d 50%, #1a5276 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            width: 280px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Collapsed Sidebar */
+        .sidebar.collapsed {
+            width: 72px;
+        }
+
+        .sidebar.collapsed .sidebar-brand h2,
+        .sidebar.collapsed .sidebar-brand small,
+        .sidebar.collapsed .nav-item span:not(.nav-icon),
+        .sidebar.collapsed .nav-item .nav-badge,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .nav-item .nav-icon {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            justify-content: center;
+            padding: 20px 10px;
+        }
+
+        .sidebar.collapsed .sidebar-brand .brand-icon {
+            font-size: 36px;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+            font-size: 20px;
+        }
+
+        .sidebar.collapsed .nav-item .nav-icon {
+            display: block;
+            font-size: 22px;
+            width: auto;
+        }
+
+        .sidebar.collapsed .nav-section {
+            padding: 0 12px;
+        }
+
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item[data-section="launch"] {
+            padding: 12px;
+            font-size: 20px;
+        }
+
+        .sidebar.collapsed .nav-item[data-section="launch"] span {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item[data-section="launch"] .nav-icon {
+            display: block;
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle-btn {
+            position: fixed;
+            left: 290px;
+            top: 12px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #1a365d;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .sidebar-toggle-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        .sidebar.collapsed ~ .sidebar-toggle-btn {
+            left: 84px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .sidebar-brand {
+            padding: 20px 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand .brand-icon {
+            font-size: 32px;
+            color: #4fc3f7;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-brand small {
+            display: block;
+            font-size: 10px;
+            font-weight: 300;
+            opacity: 0.6;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav {
+            padding: 15px 0;
+        }
+
+        .sidebar-nav .nav-section {
+            padding: 0 20px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav .nav-section:first-child {
+            margin-top: 0;
+        }
+
+        .sidebar-nav .nav-section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 2px;
+            font-size: 14px;
+            font-weight: 400;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar-nav .nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .sidebar.collapsed .sidebar-nav .nav-item:hover {
+            transform: none;
+        }
+
+        .sidebar-nav .nav-item.active {
+            background: rgba(79, 195, 247, 0.15);
+            color: #4fc3f7;
+            box-shadow: inset 3px 0 0 #4fc3f7;
+        }
+
+        .sidebar-nav .nav-item .nav-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav .nav-item .nav-badge {
+            margin-left: auto;
+            background: rgba(79, 195, 247, 0.2);
+            color: #4fc3f7;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            background: #f0f4f8;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 72px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 12px 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a365d;
+        }
+
+        .top-bar .page-title span {
+            color: #2e86c1;
+        }
+
+        .top-bar .top-bar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .top-bar .top-bar-actions .btn-launch {
+            background: linear-gradient(135deg, #1a5276, #2e86c1);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .top-bar .top-bar-actions .btn-launch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 134, 193, 0.4);
+            color: white;
+        }
+
+        /* Content Sections - CENTERED */
+        .content-section {
+            padding: 30px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #0a1628 0%, #1a365d 50%, #1a5276 100%);
+            border-radius: 16px;
+            padding: 40px 50px;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(79, 195, 247, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-section .hero-badge {
+            display: inline-block;
+            background: rgba(79, 195, 247, 0.15);
+            color: #4fc3f7;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .hero-section h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section h1 .highlight {
+            color: #4fc3f7;
+        }
+
+        .hero-section p {
+            font-size: 16px;
+            opacity: 0.8;
+            max-width: 600px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section .hero-stats .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-section .hero-stats .stat .number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #4fc3f7;
+        }
+
+        .hero-section .hero-stats .stat .label {
+            font-size: 12px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            height: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .info-card .card-icon.blue {
+            background: rgba(46, 134, 193, 0.1);
+            color: #2e86c1;
+        }
+
+        .info-card .card-icon.green {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+        }
+
+        .info-card .card-icon.orange {
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+        }
+
+        .info-card .card-icon.purple {
+            background: rgba(155, 89, 182, 0.1);
+            color: #8e44ad;
+        }
+
+        .info-card h5 {
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        /* CORS Introduction Section */
+        .cors-intro {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .cors-intro h3 {
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 16px;
+            font-size: 22px;
+        }
+
+        .cors-intro h3 i {
+            color: #2e86c1;
+            margin-right: 10px;
+        }
+
+        .cors-intro p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .cors-intro .highlight-box {
+            background: linear-gradient(135deg, #f0f7ff, #e8f4fd);
+            border-left: 4px solid #2e86c1;
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+        }
+
+        .cors-intro .highlight-box strong {
+            color: #1a5276;
+        }
+
+        /* ===== IMAGE GALLERY STYLES ===== */
+        .image-gallery {
+            margin: 20px 0;
+        }
+
+        .image-gallery .gallery-image {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            height: 100%;
+        }
+
+        .image-gallery .gallery-image:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-gallery .gallery-image img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-gallery .gallery-image .image-caption {
+            padding: 14px 18px;
+            background: white;
+            font-size: 14px;
+            color: #444;
+            font-weight: 600;
+            border-top: 1px solid #f0f4f8;
+            text-align: center;
+        }
+
+        .image-gallery .gallery-image .image-caption i {
+            color: #2e86c1;
+            margin-right: 8px;
+        }
+
+        /* About page specific styles */
+        .about-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .about-content h5 {
+            font-weight: 700;
+            color: #1a365d;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .about-content h5:first-child {
+            margin-top: 0;
+        }
+
+        .about-content h5 i {
+            color: #2e86c1;
+            margin-right: 8px;
+        }
+
+        .about-content p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .about-content ul {
+            color: #555;
+            line-height: 1.8;
+            padding-left: 20px;
+            font-size: 15px;
+        }
+
+        .about-content ul li {
+            margin-bottom: 4px;
+        }
+
+        /* Mobile Toggle - Hamburger */
+        .sidebar-mobile-toggle {
+            display: none;
+            background: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 20px;
+            color: #1a365d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* PDF Overlay */
+        .pdf-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .pdf-overlay.active {
+            display: block;
+        }
+
+        .pdf-overlay .pdf-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .pdf-overlay .pdf-container iframe {
+            width: 100%;
+            height: calc(100% - 56px);
+            border: none;
+            margin-top: 56px;
+        }
+
+        .pdf-overlay .pdf-toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: linear-gradient(135deg, #0a1628, #1a365d);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-back-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-back-btn:hover {
+            background: rgba(46, 134, 193, 0.3);
+            border-color: #2e86c1;
+            transform: translateX(-2px);
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-back-btn i {
+            font-size: 14px;
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            text-align: center;
+            margin: 0 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-close-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pdf-overlay .pdf-toolbar .pdf-close-btn:hover {
+            background: rgba(231, 76, 60, 0.4);
+            border-color: #e74c3c;
+            transform: rotate(90deg);
+        }
+
+        /* PDF Viewer - Hide print and download buttons */
+        .pdf-overlay .pdf-container iframe {
+            pointer-events: auto;
+        }
+
+        /* Hide print button using CSS (works in some browsers) */
+        .pdf-overlay .pdf-container iframe::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pdf-overlay .pdf-container iframe::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .pdf-overlay .pdf-container iframe::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .pdf-overlay {
+                padding: 10px;
+            }
+            
+            .pdf-overlay .pdf-container iframe {
+                height: calc(100% - 48px);
+                margin-top: 48px;
+            }
+            
+            .pdf-overlay .pdf-toolbar {
+                height: 48px;
+                padding: 0 10px;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-back-btn {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-back-btn i {
+                font-size: 12px;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-title {
+                font-size: 11px;
+                margin: 0 8px;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-close-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pdf-overlay .pdf-toolbar .pdf-back-btn span {
+                display: none;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-back-btn {
+                padding: 4px 8px;
+            }
+            
+            .pdf-overlay .pdf-toolbar .pdf-title {
+                font-size: 10px;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .sidebar.collapsed {
+                width: 280px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.collapsed.show {
+                transform: translateX(0);
+            }
+
+            .sidebar.collapsed .sidebar-brand h2,
+            .sidebar.collapsed .sidebar-brand small,
+            .sidebar.collapsed .nav-item span:not(.nav-icon),
+            .sidebar.collapsed .nav-item .nav-badge,
+            .sidebar.collapsed .nav-section-title {
+                display: block;
+            }
+
+            .sidebar.collapsed .sidebar-brand {
+                justify-content: flex-start;
+                padding: 20px 20px 15px;
+            }
+
+            .sidebar.collapsed .sidebar-brand .brand-icon {
+                font-size: 32px;
+            }
+
+            .sidebar.collapsed .nav-item {
+                justify-content: flex-start;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .sidebar.collapsed .nav-item .nav-icon {
+                display: block;
+                font-size: 18px;
+                width: 24px;
+            }
+
+            .sidebar.collapsed .nav-section {
+                padding: 0 20px;
+            }
+
+            .sidebar.collapsed .nav-section-title {
+                display: block;
+            }
+
+            .sidebar.collapsed .nav-item[data-section="launch"] {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .sidebar.collapsed .nav-item[data-section="launch"] span {
+                display: inline;
+            }
+
+            .sidebar.collapsed .nav-item[data-section="launch"] .nav-icon {
+                display: block;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .sidebar-toggle-btn {
+                display: none !important;
+            }
+
+            .sidebar-mobile-toggle {
+                display: block;
+            }
+
+            .top-bar {
+                padding: 10px 16px;
+            }
+
+            .top-bar .page-title {
+                font-size: 16px;
+            }
+
+            .content-section {
+                padding: 16px;
+            }
+
+            .hero-section {
+                padding: 24px 20px;
+            }
+
+            .hero-section h1 {
+                font-size: 24px;
+            }
+
+            .hero-section .hero-stats {
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            .hero-section .hero-stats .stat .number {
+                font-size: 22px;
+            }
+
+            .image-gallery .gallery-image img {
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-section {
+                padding: 20px 16px;
+            }
+
+            .hero-section h1 {
+                font-size: 20px;
+            }
+
+            .hero-section p {
+                font-size: 14px;
+            }
+
+            .top-bar .page-title {
+                font-size: 14px;
+            }
+
+            .top-bar .top-bar-actions .btn-launch {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+
+            .sidebar {
+                width: 260px;
+            }
+
+            .image-gallery .gallery-image img {
+                height: 180px;
+            }
+
+            .about-content {
+                padding: 20px;
+            }
+
+            .about-content h5 {
+                font-size: 16px;
+            }
+
+            .about-content p,
+            .about-content ul {
+                font-size: 14px;
+            }
+        }
+
+        /* Scrollbar for main content */
+        .main-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: #f0f4f8;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: #c0c8d4;
+            border-radius: 3px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: #a0aab8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar Collapse Toggle Button (Desktop) -->
+    <button class="sidebar-toggle-btn" id="sidebarCollapseBtn" title="Toggle Sidebar">
+        <i class="fas fa-chevron-left" id="collapseIcon"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <span class="brand-icon">📡</span>
+            <div>
+                <h2>CORS Mapping</h2>
+                <small>Network Mapping Application</small>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <button class="nav-item active" data-section="home">
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-section="cors-map">
+                    <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
+                    <span>CORS Map</span>
+                    <span class="nav-badge">Live</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">About</div>
+                <button class="nav-item" data-section="about">
+                    <span class="nav-icon"><i class="fas fa-info-circle"></i></span>
+                    <span>About CORS</span>
+                </button>
+                <button class="nav-item" data-section="benefits">
+                    <span class="nav-icon"><i class="fas fa-star"></i></span>
+                    <span>Benefits</span>
+                </button>
+                <button class="nav-item" data-section="contact">
+                    <span class="nav-icon"><i class="fas fa-envelope"></i></span>
+                    <span>Contact</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Resources</div>
+                <a href="#" class="nav-item" onclick="openPDF(); return false;">
+                    <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
+                    <span>Documentation</span>
+                </a>
+                <a href="#" class="nav-item" onclick="return false;">
+                    <span class="nav-icon"><i class="fas fa-download"></i></span>
+                    <span>Downloads</span>
+                </a>
+            </div>
+
+            <!-- Sidebar Footer - Copyright -->
+            <div class="nav-section" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; padding-bottom: 10px;">
+                <div style="text-align: center; font-size: 12px; color: rgba(255,255,255,0.4);">
+                    <span>© 2026 All Rights Reserved</span>
+                    <div style="margin-top: 4px; font-size: 11px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-phone" style="color: #4fc3f7; margin-right: 4px;"></i> +233 501500034
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="sidebar-mobile-toggle" id="sidebarMobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    CORS <span>Network</span>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <a href="cors.html" class="btn-launch">
+                    <i class="fas fa-map"></i> Open Map
+                </a>
+            </div>
+        </div>
+
+        <!-- Content Sections - CENTERED -->
+        <!-- Home Section -->
+        <div class="content-section active" id="section-home">
+            <!-- Hero -->
+            <div class="hero-section">
+                <div class="hero-badge">
+                    <i class="fas fa-satellite"></i> Ghana CORS Network
+                </div>
+                <h1>
+                    Know Your Location and the <br>
+                    <span class="highlight">Nearest CORS</span>
+                </h1>
+                <p>
+                    Explore Ghana's Continuously Operating Reference Station (CORS) network.
+                    Find the nearest CORS station to your location with an interactive mapping platform.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="number" id="stationCount">--</span>
+                        <span class="label">CORS</span>
+                    </div>
+                    <div class="stat">
+                        <span class="number" id="regionCount">--</span>
+                        <span class="label">Regions</span>
+                    </div>
+                    <div class="stat">
+                        <span class="number">24/7</span>
+                        <span class="label">Availability</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Features -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="info-card">
+                        <div class="card-icon blue"><i class="fas fa-map-pin"></i></div>
+                        <h5>Find Nearest CORS</h5>
+                        <p>Locate the closest CORS station to your position with one click.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="info-card">
+                        <div class="card-icon green"><i class="fas fa-ruler"></i></div>
+                        <h5>Measure Distances</h5>
+                        <p>Calculate distances and areas directly on the interactive map.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="info-card">
+                        <div class="card-icon orange"><i class="fas fa-layer-group"></i></div>
+                        <h5>Multiple Basemaps</h5>
+                        <p>Switch between street map and satellite imagery for better context.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="info-card">
+                        <div class="card-icon purple"><i class="fas fa-filter"></i></div>
+                        <h5>Filter by Region</h5>
+                        <p>Narrow down stations by region to find what you need faster.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CORS Introduction -->
+            <div class="cors-intro">
+                <h3><i class="fas fa-satellite-dish"></i> What is a CORS Network?</h3>
+                <p>
+                    A <strong>Continuously Operating Reference Station (CORS)</strong> network is a system of 
+                    permanently installed GNSS (Global Navigation Satellite System) receivers that continuously 
+                    collect and transmit positioning data. These stations provide highly accurate, real-time 
+                    positioning information for various applications including:
+                </p>
+                <div class="highlight-box">
+                    <strong>📍 Key Applications:</strong>
+                    <ul style="margin: 8px 0 0 20px; color: #444;">
+                        <li>Land surveying and mapping</li>
+                        <li>Geodetic control and reference</li>
+                        <li>Construction and engineering</li>
+                        <li>Agriculture and precision farming</li>
+                        <li>Scientific research and monitoring</li>
+                        <li>Disaster management and response</li>
+                    </ul>
+                </div>
+                <p style="margin-top: 12px;">
+                    The Ghana CORS network is operated by the <strong>Lands Commission</strong> and serves as 
+                    the foundation for the country's geospatial infrastructure, enabling precise positioning 
+                    for government, commercial, and research purposes.
+                </p>
+            </div>
+        </div>
+
+        <!-- CORS Map Section -->
+        <div class="content-section" id="section-cors-map">
+            <div style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-map-marked-alt" style="font-size: 60px; color: #2e86c1; margin-bottom: 16px;"></i>
+                <h2 style="font-weight: 700; color: #1a365d;">Launch CORS Map</h2>
+                <p style="color: #666; max-width: 500px; margin: 0 auto 24px;">
+                    Open the interactive CORS mapping application to explore the complete network,
+                    find the nearest station, and perform spatial analysis.
+                </p>
+                <a href="cors.html" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #1a5276, #2e86c1); border: none; padding: 12px 40px; border-radius: 12px; font-weight: 600;">
+                    <i class="fas fa-rocket"></i> Launch Map Application
+                </a>
+                <div style="margin-top: 16px; color: #888; font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> Opens in the same tab
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section with 3 Images -->
+        <div class="content-section" id="section-about">
+            <div style="max-width: 900px; margin: 0 auto;">
+                <h2 style="font-weight: 700; color: #1a365d; margin-bottom: 20px;">
+                    <i class="fas fa-info-circle" style="color: #2e86c1;"></i> About the CORS Network
+                </h2>
+                
+                <!-- About Content with Images -->
+                <div class="about-content">
+                    <!-- Image Gallery - 3 Images in a Row -->
+                    <div class="image-gallery">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="gallery-image">
+                                    <img src="images/cors-station.png" alt="CORS Station" onerror="this.style.display='none'; this.parentElement.querySelector('.image-caption').textContent='📡 CORS Station'">
+                                    <div class="image-caption">
+                                        <i class="fas fa-satellite-dish"></i> CORS Station Installation
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="gallery-image">
+                                    <img src="images/gnss-receiver.png" alt="GNSS Receiver" onerror="this.style.display='none'; this.parentElement.querySelector('.image-caption').textContent='📡 GNSS Receiver'">
+                                    <div class="image-caption">
+                                        <i class="fas fa-microchip"></i> GNSS Receiver Equipment
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="gallery-image">
+                                    <img src="images/cors-network-map.png" alt="CORS Network Map" onerror="this.style.display='none'; this.parentElement.querySelector('.image-caption').textContent='🗺️ CORS Network Map'">
+                                    <div class="image-caption">
+                                        <i class="fas fa-map"></i> CORS Network Coverage
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5><i class="fas fa-question-circle"></i> What is CORS</h5>
+                    <p>
+                        A <strong>Continuously Operating Reference Station (CORS)</strong> is a permanently installed 
+                        GNSS receiver that continuously tracks satellite signals and provides precise positioning data. 
+                        These stations serve as fixed reference points that enable centimeter-level accuracy for 
+                        positioning applications.
+                    </p>
+
+                    <h5><i class="fas fa-cogs"></i> How CORS Works</h5>
+                    <p>
+                        CORS stations continuously collect GNSS data and transmit it to a central processing center.
+                        This data is used to calculate corrections that improve the accuracy of mobile GNSS receivers
+                        in the field, enabling high-precision positioning for surveying, construction, and navigation.
+                    </p>
+
+                    <h5><i class="fas fa-map-marked-alt"></i> Ghana's CORS Network</h5>
+                    <p>
+                        The Ghana CORS network is managed by the <strong>Lands Commission</strong> and consists of strategically
+                        placed reference stations across the country. The network supports:
+                    </p>
+                    <ul>
+                        <li>Land administration and management</li>
+                        <li>Surveying and mapping operations</li>
+                        <li>Infrastructure development and monitoring</li>
+                        <li>Geospatial research and education</li>
+                        <li>Environmental monitoring and disaster response</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="content-section" id="section-benefits">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-weight: 700; color: #1a365d; margin-bottom: 20px;">
+                    <i class="fas fa-star" style="color: #f39c12;"></i> Benefits of the CORS Network
+                </h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-icon blue"><i class="fas fa-bullseye"></i></div>
+                            <h5>High Precision</h5>
+                            <p>Achieve centimeter-level accuracy for surveying, construction, and mapping applications.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-clock"></i></div>
+                            <h5>24/7 Availability</h5>
+                            <p>Stations operate continuously, providing reliable positioning data around the clock.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-icon orange"><i class="fas fa-globe"></i></div>
+                            <h5>National Coverage</h5>
+                            <p>Strategically positioned stations provide coverage across all regions of Ghana.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-icon purple"><i class="fas fa-chart-line"></i></div>
+                            <h5>Economic Impact</h5>
+                            <p>Supports infrastructure development, resource management, and economic growth.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="content-section" id="section-contact">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <h2 style="font-weight: 700; color: #1a365d; margin-bottom: 20px;">
+                    <i class="fas fa-envelope" style="color: #2e86c1;"></i> Contact Us
+                </h2>
+                <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04);">
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f4f8;">
+                        <i class="fas fa-building" style="font-size: 20px; color: #2e86c1; width: 30px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #1a365d;">GeoBase Solutions Inc.</div>
+                            <div style="font-size: 14px; color: #666;">Where Ideas Meet Creativity, Innovation Follows</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f4f8;">
+                        <i class="fas fa-map-pin" style="font-size: 20px; color: #2e86c1; width: 30px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #1a365d;">Location</div>
+                            <div style="font-size: 14px; color: #666;">Accra, Ghana</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f4f8;">
+                        <i class="fas fa-phone" style="font-size: 20px; color: #2e86c1; width: 30px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #1a365d;">Phone</div>
+                            <div style="font-size: 14px; color: #666;">+233 501500034</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0;">
+                        <i class="fas fa-envelope" style="font-size: 20px; color: #2e86c1; width: 30px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #1a365d;">Email</div>
+                            <div style="font-size: 14px; color: #666;">geobasesolutions1@gmail.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Launch Section (Hidden - used as action) -->
+        <div class="content-section" id="section-launch" style="display: none;"></div>
+    </div>
+
+    <!-- PDF Overlay -->
+    <div class="pdf-overlay" id="pdfOverlay">
+        <div class="pdf-container">
+            <div class="pdf-toolbar">
+                <button class="pdf-back-btn" id="pdfBackBtn">
+                    <i class="fas fa-arrow-left"></i> <span>Back to Home</span>
+                </button>
+                <div class="pdf-title">
+                    <i class="fas fa-file-pdf" style="color: #e74c3c; margin-right: 8px;"></i> CORS Documentation
+                </div>
+                <button class="pdf-close-btn" id="pdfCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <iframe id="pdfFrame" src="documentation/cors_web_mapping.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH"></iframe>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ============================================
+        // SIDEBAR COLLAPSE (Desktop)
+        // ============================================
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const collapseBtn = document.getElementById('sidebarCollapseBtn');
+        const collapseIcon = document.getElementById('collapseIcon');
+        let isCollapsed = false;
+
+        // Load saved state
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+            collapseIcon.className = 'fas fa-chevron-right';
+            isCollapsed = true;
+        }
+
+        collapseBtn.addEventListener('click', function() {
+            isCollapsed = !isCollapsed;
+            sidebar.classList.toggle('collapsed');
+            collapseIcon.className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        });
+
+        // ============================================
+        // SIDEBAR TOGGLE (Mobile)
+        // ============================================
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileToggle = document.getElementById('sidebarMobileToggle');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+            // On mobile, remove collapsed state when showing
+            if (sidebar.classList.contains('show')) {
+                sidebar.classList.remove('collapsed');
+            }
+        }
+
+        mobileToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        const navItems = document.querySelectorAll('.nav-item[data-section]');
+        const sections = {
+            home: document.getElementById('section-home'),
+            'cors-map': document.getElementById('section-cors-map'),
+            about: document.getElementById('section-about'),
+            benefits: document.getElementById('section-benefits'),
+            contact: document.getElementById('section-contact'),
+            launch: document.getElementById('section-launch')
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const sectionId = this.dataset.section;
+
+                // Handle launch button - redirect to map
+                if (sectionId === 'launch') {
+                    window.location.href = 'cors.html';
+                    return;
+                }
+
+                // Remove active class from all nav items
+                navItems.forEach(nav => nav.classList.remove('active'));
+
+                // Add active class to clicked item
+                this.classList.add('active');
+
+                // Hide all sections
+                Object.values(sections).forEach(section => {
+                    if (section) section.classList.remove('active');
+                });
+
+                // Show the selected section
+                if (sections[sectionId]) {
+                    sections[sectionId].classList.add('active');
+                }
+
+                // Close sidebar on mobile
+                if (window.innerWidth <= 992) {
+                    toggleSidebar();
+                }
+
+                // Scroll to top of content
+                document.querySelector('.main-content').scrollTop = 0;
+            });
+        });
+
+        // ============================================
+        // LOAD STATION STATS
+        // ============================================
+        function loadStats() {
+            const script = document.createElement('script');
+            script.src = 'data/GhanaCORStation_4.js';
+            script.onload = function() {
+                if (typeof json_GhanaCORStation_4 !== 'undefined') {
+                    const features = json_GhanaCORStation_4.features;
+                    const stationCount = features.length;
+                    
+                    const regions = new Set();
+                    features.forEach(f => {
+                        const region = f.properties['Region'] || '';
+                        if (region) regions.add(region);
+                    });
+
+                    document.getElementById('stationCount').textContent = stationCount;
+                    document.getElementById('regionCount').textContent = regions.size;
+                }
+            };
+            script.onerror = function() {
+                document.getElementById('stationCount').textContent = '30+';
+                document.getElementById('regionCount').textContent = '16';
+            };
+            document.head.appendChild(script);
+        }
+
+        setTimeout(loadStats, 500);
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'm') {
+                e.preventDefault();
+                window.location.href = 'cors.html';
+            }
+            // Ctrl+B to toggle sidebar
+            if (e.ctrlKey && e.key === 'b') {
+                e.preventDefault();
+                collapseBtn.click();
+            }
+        });
+
+        // ============================================
+        // RESIZE HANDLER
+        // ============================================
+        function handleResize() {
+            if (window.innerWidth > 992) {
+                // Desktop: show collapse button, hide mobile toggle
+                collapseBtn.style.display = 'flex';
+                mobileToggle.style.display = 'none';
+                // Restore collapsed state from localStorage
+                if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                    sidebar.classList.add('collapsed');
+                    collapseIcon.className = 'fas fa-chevron-right';
+                    isCollapsed = true;
+                }
+            } else {
+                // Mobile: hide collapse button, show mobile toggle
+                collapseBtn.style.display = 'none';
+                mobileToggle.style.display = 'block';
+                // Remove collapsed state on mobile
+                sidebar.classList.remove('collapsed');
+                // Close sidebar on mobile if open
+                if (sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        // ============================================
+        // OPEN PDF IN OVERLAY
+        // ============================================
+        function openPDF() {
+            const overlay = document.getElementById('pdfOverlay');
+            const frame = document.getElementById('pdfFrame');
+            frame.src = 'documentation/cors_web_mapping.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePDF() {
+            const overlay = document.getElementById('pdfOverlay');
+            const frame = document.getElementById('pdfFrame');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            // Clear the iframe src to stop loading
+            setTimeout(function() {
+                frame.src = '';
+            }, 300);
+        }
+
+        function goBackHome() {
+            closePDF();
+            // Navigate to Home section
+            const homeSection = document.getElementById('section-home');
+            const homeNav = document.querySelector('.nav-item[data-section="home"]');
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item[data-section]').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            
+            // Add active class to home
+            if (homeNav) homeNav.classList.add('active');
+            
+            // Hide all sections and show home
+            Object.values(sections).forEach(section => {
+                if (section) section.classList.remove('active');
+            });
+            if (homeSection) homeSection.classList.add('active');
+            
+            // Scroll to top
+            document.querySelector('.main-content').scrollTop = 0;
+        }
+
+        // Close PDF with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const overlay = document.getElementById('pdfOverlay');
+                if (overlay.classList.contains('active')) {
+                    closePDF();
+                }
+            }
+        });
+
+        // Close PDF when clicking on the overlay background (not the iframe)
+        document.getElementById('pdfOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePDF();
+            }
+        });
+
+        // Close PDF button
+        document.getElementById('pdfCloseBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            closePDF();
+        });
+
+        // Back to Home button
+        document.getElementById('pdfBackBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            goBackHome();
+        });
+
+        console.log('📍 CORS Ghana - Landing Page loaded');
+        console.log('💡 Press Ctrl+M to open the map application');
+        console.log('💡 Press Ctrl+B to toggle sidebar collapse');
+        console.log('📱 Sidebar auto-adjusts for mobile devices');
+        console.log('🖼️ 3 Images loaded: CORS Station, GNSS Receiver, CORS Network Map');
+        console.log('📄 PDF Documentation - Read Only (No Print/Save)');
+    </script>
+</body>
+</html>

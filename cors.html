@@ -1,0 +1,2769 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width,height=device-height">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <title>CORS Network Map - Ghana</title>
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header with back button */
+        .header {
+            background: linear-gradient(135deg, #1a5276, #2e86c1);
+            color: white;
+            padding: 6px 12px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header .btn-back {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        
+        .header .btn-back:hover {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        
+        .header h1 .gnss-icon-header {
+            display: inline-block;
+            margin-right: 4px;
+        }
+        
+        .header .subtitle {
+            font-size: 9px;
+            opacity: 0.85;
+            margin-top: 1px;
+            font-weight: 300;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-right .badge-cors {
+            background: rgba(255,255,255,0.15);
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+        }
+        
+        /* Controls section */
+        .controls {
+            background: white;
+            padding: 5px 10px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #e0e0e0;
+            z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 8px;
+        }
+        
+        .controls .control-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 0 1 auto;
+        }
+        
+        .controls label {
+            font-size: 9px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        
+        .controls select {
+            padding: 3px 6px;
+            padding-right: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 10px;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 4px center;
+            background-size: 8px;
+            min-width: 60px;
+            max-width: 160px;
+            height: 22px;
+        }
+        
+        .controls select:focus {
+            outline: none;
+            border-color: #2e86c1;
+            box-shadow: 0 0 0 2px rgba(46, 134, 193, 0.2);
+        }
+        
+        .controls .btn-clear {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 9px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+            white-space: nowrap;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .controls .btn-clear:hover {
+            background: #e0e0e0;
+        }
+        
+        .controls .btn-clear:active {
+            transform: scale(0.95);
+        }
+        
+        .controls .filter-info {
+            font-size: 9px;
+            color: #888;
+            text-align: center;
+            flex: 1 1 100%;
+            padding-top: 2px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 2px;
+        }
+        
+        /* Map container */
+        #map {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            position: relative;
+            height: 60vh;
+            max-height: 70vh;
+            background: #e8eef3;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a5276;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 3px 10px;
+            font-size: 8px;
+            flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: 0.3px;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 600px) {
+            .header {
+                padding: 4px 8px;
+            }
+            
+            .header h1 {
+                font-size: 12px;
+            }
+            
+            .header .btn-back {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+            
+            .controls {
+                padding: 4px 6px;
+                gap: 3px 5px;
+            }
+            
+            .controls select {
+                font-size: 9px;
+                padding: 2px 4px;
+                padding-right: 16px;
+                min-width: 50px;
+                max-width: 120px;
+                height: 20px;
+            }
+            
+            .controls label {
+                font-size: 8px;
+            }
+            
+            .controls .btn-clear {
+                font-size: 8px;
+                padding: 2px 8px;
+                height: 20px;
+            }
+            
+            .controls .filter-info {
+                font-size: 8px;
+            }
+            
+            #map {
+                height: 55vh;
+                max-height: 65vh;
+            }
+            
+            .footer {
+                font-size: 7px;
+                padding: 2px 6px;
+            }
+            
+            .header-right .badge-cors {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .controls select {
+                min-width: 40px;
+                max-width: 90px;
+                font-size: 8px;
+                padding: 1px 3px;
+                padding-right: 12px;
+                height: 18px;
+            }
+            
+            .controls label {
+                font-size: 7px;
+            }
+            
+            .controls .btn-clear {
+                font-size: 7px;
+                padding: 1px 6px;
+                height: 18px;
+            }
+        }
+        
+        /* ===== CLEANER TOOLTIP - SMALLER ===== */
+        .distance-tooltip {
+            background: rgba(0, 0, 0, 0.8) !important;
+            border: 1px solid #f42906 !important;
+            border-radius: 4px !important;
+            padding: 3px 10px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+            font-weight: bold !important;
+            font-family: 'Arial', sans-serif !important;
+            color: #ffffff !important;
+            font-size: 11pt !important;
+            text-align: center !important;
+            pointer-events: none !important;
+            white-space: nowrap !important;
+        }
+        
+        .distance-tooltip:before {
+            border-top-color: #f42906 !important;
+            border-width: 6px !important;
+            margin-top: -2px !important;
+        }
+        
+        .distance-tooltip .distance-value {
+            color: #ff6b6b;
+            font-size: 13pt;
+        }
+        
+        /* ===== CLICK POPUP - SMALLER ===== */
+        .click-popup .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+            padding: 0 !important;
+        }
+        
+        .click-popup .leaflet-popup-content {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            min-width: 120px !important;
+            max-width: 160px !important;
+        }
+        
+        .click-popup .leaflet-popup-content h4 {
+            font-size: 11px !important;
+            margin: 0 0 2px 0 !important;
+            color: #f42906 !important;
+        }
+        
+        .click-popup .leaflet-popup-content .distance-display {
+            font-size: 18px !important;
+            color: #ffd700 !important;
+            font-weight: bold !important;
+            padding: 2px 0 !important;
+        }
+        
+        .click-popup .leaflet-popup-content .sub-text {
+            font-size: 9px !important;
+            color: #999 !important;
+            border-top: 1px solid #eee !important;
+            padding-top: 3px !important;
+            margin-top: 3px !important;
+        }
+        
+        .click-popup .leaflet-popup-tip {
+            display: none !important;
+        }
+        
+        /* ===== STATION LABELS - NO RECTANGLES ===== */
+        .station-label {
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            font-weight: bold !important;
+            font-family: 'Arial', sans-serif !important;
+            color: #cc0000 !important;
+            font-size: 7pt !important;
+            text-align: center !important;
+            pointer-events: none !important;
+            white-space: nowrap !important;
+            text-shadow: 0 0 6px rgba(255,255,255,0.95), 0 0 12px rgba(255,255,255,0.8) !important;
+        }
+        
+        /* Selected station label */
+        .station-label-selected {
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            font-weight: bold !important;
+            font-family: 'Arial', sans-serif !important;
+            color: #ff2200 !important;
+            font-size: 9pt !important;
+            text-align: center !important;
+            pointer-events: none !important;
+            white-space: nowrap !important;
+            text-shadow: 0 0 8px rgba(255, 34, 0, 0.4), 0 0 16px rgba(255,255,255,0.9) !important;
+        }
+        
+        /* ===== NEAREST CORS LABEL ===== */
+        .station-label-nearest {
+            background: rgba(0, 255, 0, 0.2) !important;
+            border: 2px solid #00ff00 !important;
+            border-radius: 4px !important;
+            padding: 2px 8px !important;
+            font-weight: bold !important;
+            font-family: 'Arial', sans-serif !important;
+            color: #008800 !important;
+            font-size: 8pt !important;
+            text-align: center !important;
+            pointer-events: none !important;
+            white-space: nowrap !important;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3) !important;
+        }
+        
+        /* Hide tooltip arrows for permanent labels */
+        .leaflet-tooltip.station-label:before,
+        .leaflet-tooltip.station-label-selected:before,
+        .leaflet-tooltip.station-label-nearest:before {
+            display: none !important;
+        }
+        
+        /* ===== GNSS ICON - DEFAULT BLUE ===== */
+        .gnss-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle at 30% 30%, #4a90d9, #1a5276);
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .gnss-icon:hover {
+            transform: scale(1.15);
+        }
+        
+        .gnss-icon:after {
+            content: "📡";
+            font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* ===== GNSS ICON - SELECTED ===== */
+        .gnss-icon-selected {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle at 30% 30%, #ff3333, #cc0000);
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 2px 8px rgba(0,0,0,0.4);
+            position: relative;
+            transition: transform 0.2s;
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+        
+        .gnss-icon-selected:after {
+            content: "📡";
+            font-size: 14px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* ===== GNSS ICON - NEAREST (GREEN) ===== */
+        .gnss-icon-nearest {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle at 30% 30%, #00ff00, #008800);
+            border-radius: 50%;
+            border: 3px solid #ffff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.8), 0 2px 8px rgba(0,0,0,0.4);
+            position: relative;
+            transition: transform 0.2s;
+            animation: pulse-green 1s ease-in-out infinite;
+        }
+        
+        .gnss-icon-nearest:after {
+            content: "📡";
+            font-size: 14px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8), 0 2px 8px rgba(0,0,0,0.4); }
+            50% { box-shadow: 0 0 60px rgba(0, 255, 0, 1), 0 2px 12px rgba(0,0,0,0.5); }
+            100% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8), 0 2px 8px rgba(0,0,0,0.4); }
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 2px 8px rgba(0,0,0,0.4); }
+            50% { box-shadow: 0 0 40px rgba(255, 0, 0, 0.9), 0 2px 12px rgba(0,0,0,0.5); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 2px 8px rgba(0,0,0,0.4); }
+        }
+        
+        /* ===== USER LOCATION ICON ===== */
+        .user-location-icon {
+            background: #ff4444;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* ===== PLACED POINT ICON ===== */
+        .placed-point-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #ff6b00, #cc4400);
+            border-radius: 50%;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            animation: pulse-orange 1.5s ease-in-out infinite;
+        }
+        
+        .placed-point-icon:after {
+            content: "📍";
+            font-size: 14px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 2px 8px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 0, 0.9), 0 2px 12px rgba(0,0,0,0.4); }
+            100% { box-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 2px 8px rgba(0,0,0,0.3); }
+        }
+        
+        /* ===== COMBINED BOTTOM-LEFT PANEL ===== */
+        .bottom-left-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: none;
+            max-width: 200px;
+        }
+        
+        /* Legend */
+        .legend-container {
+            pointer-events: auto;
+            width: 100%;
+        }
+        
+        .legend-container .legend-toggle {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 30px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .legend-container .legend-toggle:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .legend-container .legend-toggle .icon {
+            font-size: 12px;
+        }
+        
+        .legend-container .legend-toggle .arrow {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .legend-container .legend-toggle .arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .info-legend {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            font-size: 10px;
+            line-height: 1.6;
+            max-width: 190px;
+            border: 1px solid rgba(0,0,0,0.08);
+            margin-top: 6px;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .info-legend.visible {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .info-legend h4 {
+            margin: 0 0 4px 0;
+            color: #333;
+            font-size: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        
+        .info-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 0;
+        }
+        
+        .info-legend .line-sample {
+            display: inline-block;
+            width: 16px;
+            height: 2px;
+            background: #f42906;
+            flex-shrink: 0;
+        }
+        
+        .info-legend .line-sample-clicked {
+            display: inline-block;
+            width: 16px;
+            height: 3px;
+            background: #ffd700;
+            flex-shrink: 0;
+            border-radius: 1px;
+        }
+        
+        .info-legend .station-sample {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle at 30% 30%, #4a90d9, #1a5276);
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 1px solid #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        
+        .info-legend .station-sample-selected {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ff3333, #cc0000);
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+        }
+        
+        .info-legend .station-sample-nearest {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #00ff00, #008800);
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid #ffff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+        }
+        
+        .info-legend .placed-sample {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ff6b00, #cc4400);
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 12px rgba(255, 107, 0, 0.4);
+        }
+        
+        .info-legend .location-sample {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #ff4444;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid white;
+            box-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+        }
+        
+        .info-legend .hover-text {
+            color: #888;
+            font-style: italic;
+            font-size: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 4px;
+            margin-top: 4px;
+        }
+        
+        /* ===== COLLAPSIBLE ACTION BUTTONS ===== */
+        .action-container {
+            pointer-events: auto;
+            width: 100%;
+        }
+        
+        .action-container .action-toggle {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 30px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .action-container .action-toggle:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .action-container .action-toggle:active {
+            transform: scale(0.95);
+        }
+        
+        .action-container .action-toggle .icon {
+            font-size: 12px;
+        }
+        
+        .action-container .action-toggle .arrow {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .action-container .action-toggle .arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .action-container .action-toggle .badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 0 6px;
+            font-size: 8px;
+            min-width: 16px;
+            text-align: center;
+            line-height: 16px;
+            display: none;
+        }
+        
+        .action-container .action-toggle .badge.visible {
+            display: inline-block;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-badge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .action-buttons {
+            pointer-events: auto;
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            flex-direction: column;
+            gap: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+            backdrop-filter: blur(4px);
+            animation: slideDown 0.3s ease;
+            margin-top: 6px;
+            width: 100%;
+        }
+        
+        .action-buttons.visible {
+            display: flex;
+        }
+        
+        .action-buttons .action-btn {
+            padding: 5px 10px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            pointer-events: auto;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .action-buttons .action-btn .icon {
+            font-size: 10px;
+        }
+        
+        .action-buttons .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        
+        .action-buttons .action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .action-buttons .action-btn.place-point {
+            border-color: #ff6b00;
+            color: #ff6b00;
+            background: rgba(255, 107, 0, 0.05);
+        }
+        
+        .action-buttons .action-btn.place-point:hover {
+            background: #ff6b00;
+            color: white;
+            border-color: #ff6b00;
+        }
+        
+        .action-buttons .action-btn.place-point.active {
+            background: #ff6b00;
+            color: white;
+            border-color: #ff6b00;
+            box-shadow: 0 0 16px rgba(255, 107, 0, 0.3);
+            animation: pulse-button 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-button {
+            0% { box-shadow: 0 0 16px rgba(255, 107, 0, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(255, 107, 0, 0.5); }
+            100% { box-shadow: 0 0 16px rgba(255, 107, 0, 0.3); }
+        }
+        
+        .action-buttons .action-btn.my-location {
+            border-color: #e74c3c;
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+        
+        .action-buttons .action-btn.my-location:hover {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+        
+        .action-buttons .action-btn.find-cors {
+            border-color: #00cc00;
+            color: #008800;
+            background: rgba(0, 204, 0, 0.05);
+        }
+        
+        .action-buttons .action-btn.find-cors:hover {
+            background: #00cc00;
+            color: white;
+            border-color: #00cc00;
+        }
+        
+        .action-buttons .action-btn.find-cors:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .action-buttons .action-btn.find-cors:disabled:hover {
+            background: rgba(0, 204, 0, 0.05);
+            color: #008800;
+        }
+        
+        .action-buttons .action-btn.clear-all {
+            border-color: #95a5a6;
+            color: #95a5a6;
+            background: rgba(149, 165, 166, 0.05);
+        }
+        
+        .action-buttons .action-btn.clear-all:hover {
+            background: #95a5a6;
+            color: white;
+            border-color: #95a5a6;
+        }
+        
+        .action-buttons .action-btn.clear-all:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .action-buttons .action-btn.clear-all:disabled:hover {
+            background: rgba(149, 165, 166, 0.05);
+            color: #95a5a6;
+        }
+        
+        /* ===== NEAREST RESULT POPUP ===== */
+        .nearest-result {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            min-width: 220px;
+            max-width: 320px;
+            border-left: 4px solid #00cc00;
+            display: none;
+            pointer-events: auto;
+        }
+        
+        .nearest-result.visible {
+            display: block;
+            animation: slideUpResult 0.5s ease;
+        }
+        
+        @keyframes slideUpResult {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .nearest-result .station-name {
+            font-weight: bold;
+            color: #008800;
+            font-size: 15px;
+        }
+        
+        .nearest-result .station-distance {
+            font-size: 22px;
+            font-weight: bold;
+            color: #cc0000;
+            margin: 4px 0;
+        }
+        
+        .nearest-result .station-detail {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .nearest-result .station-source {
+            font-size: 9px;
+            color: #999;
+            margin-top: 2px;
+            font-style: italic;
+        }
+        
+        .nearest-result .close-result {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .nearest-result .close-result:hover {
+            color: #333;
+        }
+        
+        /* ===== PLACE POINT MODE CURSOR ===== */
+        .place-point-mode {
+            cursor: crosshair !important;
+        }
+        
+        /* ===== STATUS INDICATOR ===== */
+        .status-indicator {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            z-index: 500;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .status-indicator.visible {
+            opacity: 1;
+        }
+        
+        .status-indicator .status-icon {
+            margin-right: 6px;
+        }
+        
+        /* ===== TOP RIGHT TOOLS ===== */
+        .leaflet-control-layers {
+            background: white !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(0,0,0,0.08) !important;
+            margin-right: 10px !important;
+            margin-top: 10px !important;
+        }
+        
+        .leaflet-control-layers-toggle {
+            background-color: white !important;
+        }
+        
+        .leaflet-control-layers-expanded {
+            padding: 8px !important;
+            font-size: 11px !important;
+            max-height: 250px !important;
+            overflow-y: auto !important;
+        }
+        
+        .leaflet-control-layers-expanded label {
+            padding: 2px 0 !important;
+        }
+        
+        .leaflet-control-layers-expanded input[type="radio"],
+        .leaflet-control-layers-expanded input[type="checkbox"] {
+            margin-right: 4px !important;
+        }
+        
+        .leaflet-control-locate {
+            margin-right: 10px !important;
+            margin-top: 60px !important;
+        }
+        
+        .leaflet-control-locate a {
+            background: white !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        }
+        
+        .leaflet-control-measure {
+            background: white !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(0,0,0,0.08) !important;
+            margin-right: 10px !important;
+            margin-top: 110px !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-toggle {
+            background: white !important;
+            border: none !important;
+            font-size: 16px !important;
+            padding: 6px 10px !important;
+            cursor: pointer !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-toggle:hover {
+            background: #f0f0f0 !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-toggle:before {
+            content: "📏";
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-interaction {
+            background: rgba(255,255,255,0.95) !important;
+            border-radius: 4px !important;
+            padding: 10px !important;
+            min-width: 200px !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-interaction .leaflet-control-measure-results {
+            font-size: 12px !important;
+            line-height: 1.6 !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-interaction .leaflet-control-measure-results .group {
+            padding: 4px 0 !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-interaction .leaflet-control-measure-results .group .label {
+            font-weight: bold !important;
+            color: #555 !important;
+        }
+        
+        .leaflet-control-measure .leaflet-control-measure-interaction .leaflet-control-measure-results .group .value {
+            color: #2e86c1 !important;
+        }
+        
+        .leaflet-control-zoom {
+            margin-right: 10px !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .leaflet-control-zoom a {
+            background: white !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        }
+        
+        /* ===== LOADING INDICATOR ===== */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.9);
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2e86c1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading p {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .loading .progress-text {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .bottom-left-panel {
+                bottom: 6px;
+                left: 6px;
+                max-width: 160px;
+                gap: 4px;
+            }
+            
+            .legend-container .legend-toggle {
+                padding: 4px 10px;
+                font-size: 9px;
+            }
+            
+            .action-container .action-toggle {
+                padding: 4px 10px;
+                font-size: 9px;
+            }
+            
+            .action-container .action-toggle .badge {
+                font-size: 7px;
+                min-width: 14px;
+                line-height: 14px;
+            }
+            
+            .action-buttons {
+                padding: 6px 8px;
+                gap: 3px;
+            }
+            
+            .action-buttons .action-btn {
+                padding: 4px 8px;
+                font-size: 8px;
+            }
+            
+            .action-buttons .action-btn .icon {
+                font-size: 9px;
+            }
+            
+            .info-legend {
+                max-width: 160px;
+                padding: 6px 10px;
+                font-size: 9px;
+            }
+            
+            .nearest-result {
+                bottom: 155px;
+                min-width: 180px;
+                padding: 8px 12px;
+            }
+            
+            .nearest-result .station-name {
+                font-size: 13px;
+            }
+            
+            .nearest-result .station-distance {
+                font-size: 18px;
+            }
+            
+            .status-indicator {
+                font-size: 9px;
+                padding: 4px 12px;
+                bottom: 45px;
+            }
+            
+            .station-label {
+                font-size: 6pt !important;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .bottom-left-panel {
+                max-width: 140px;
+            }
+            
+            .action-buttons .action-btn {
+                font-size: 7px;
+                padding: 3px 6px;
+            }
+            
+            .action-buttons .action-btn .icon {
+                font-size: 8px;
+            }
+            
+            .station-label {
+                font-size: 5pt !important;
+            }
+        }
+        </style>
+    </head>
+    <body>
+        <!-- Header with Back Button -->
+        <div class="header">
+            <div class="header-left">
+                <a href="index.html" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <div>
+                    <h1>
+                        <span class="gnss-icon-header">📡</span>
+                        CORS Network Map
+                    </h1>
+                    <div class="subtitle">Ghana CORS Mapping Platform</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="badge-cors"><i class="fas fa-circle" style="color: #4fc3f7; font-size: 8px;"></i> Live</span>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <label for="regionFilter">Region</label>
+                <select id="regionFilter">
+                    <option value="all">All</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="stationFilter">Station</label>
+                <select id="stationFilter">
+                    <option value="all">All</option>
+                </select>
+            </div>
+            <button class="btn-clear" id="clearFilter">✕ Clear</button>
+            <div class="filter-info" id="filterInfo">📍 Loading map data...</div>
+        </div>
+        
+        <!-- Map -->
+        <div id="map">
+            <!-- Loading indicator with progress -->
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Loading map data...</p>
+                <div class="progress-text" id="loadingProgress">Initializing...</div>
+            </div>
+            
+            <!-- Status Indicator -->
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-icon">📍</span>
+                <span id="statusMessage">Click on the map to place a point</span>
+            </div>
+            
+            <!-- Combined Bottom-Left Panel: Legend + Tools -->
+            <div class="bottom-left-panel" id="bottomLeftPanel">
+                <!-- Legend -->
+                <div class="legend-container" id="legendContainer">
+                    <button class="legend-toggle" id="legendToggle">
+                        <span class="icon">📍</span>
+                        <span>Legend</span>
+                        <span class="arrow" id="legendArrow">▼</span>
+                    </button>
+                    <div class="info-legend" id="legendContent">
+                        <h4>📍 CORS Network</h4>
+                        <div class="legend-item"><span class="line-sample"></span> CORS Lines</div>
+                        <div class="legend-item"><span class="line-sample-clicked"></span> Selected Line</div>
+                        <div class="legend-item"><span class="station-sample"></span> CORS Stations</div>
+                        <div class="legend-item"><span class="station-sample-selected"></span> Selected Station</div>
+                        <div class="legend-item"><span class="station-sample-nearest"></span> Nearest Station</div>
+                        <div class="legend-item"><span class="placed-sample"></span> Placed Point</div>
+                        <div class="legend-item"><span class="location-sample"></span> Your Location</div>
+                        <div class="hover-text">💡 Click "Tools" below to access features</div>
+                    </div>
+                </div>
+                
+                <!-- Tools / Action Buttons -->
+                <div class="action-container" id="actionContainer">
+                    <button class="action-toggle" id="actionToggle">
+                        <span class="icon">🛠️</span>
+                        <span>Tools</span>
+                        <span class="badge" id="actionBadge">!</span>
+                        <span class="arrow" id="actionArrow">▼</span>
+                    </button>
+                    <div class="action-buttons" id="actionButtons">
+                        <button class="action-btn place-point" id="btnPlacePoint">
+                            <span class="icon">📍</span> Place Point
+                        </button>
+                        <button class="action-btn my-location" id="btnMyLocation">
+                            <span class="icon">📡</span> My Location
+                        </button>
+                        <button class="action-btn find-cors" id="btnFindCORS" disabled>
+                            <span class="icon">🎯</span> Find CORS
+                        </button>
+                        <button class="action-btn clear-all" id="btnClearAll" disabled>
+                            <span class="icon">🗑️</span> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nearest Result Display -->
+            <div class="nearest-result" id="nearestResult">
+                <button class="close-result" id="closeResult">✕</button>
+                <div class="station-name" id="nearestName">SWN4</div>
+                <div class="station-distance" id="nearestDistance">2.5 km</div>
+                <div class="station-detail" id="nearestDetail">LANDS COMMISSION, SEFWI WIAWSO</div>
+                <div class="station-source" id="nearestSource">📍 From: Your Location</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <span>© 2026 GeoBase Solutions Inc. All Rights Reserved. Phone: +233 501500034</span>
+        </div>
+        
+        <!-- Load required scripts -->
+        <script src="js/qgis2web_expressions.js?v=1.0.1"></script>
+        <script src="js/leaflet.js?v=1.0.1"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        
+        <!-- Load data -->
+        <script src="data/GhanaAdminstrativeRegions_2.js"></script>
+        <script src="data/CORSNetworkDistanceInKm_3.js"></script>
+        <script src="data/GhanaCORStation_4.js"></script>
+        
+        <script>
+        // ============================================
+        // OPTIMIZED LOADING - Track when data is ready
+        // ============================================
+        var dataLoadStatus = {
+            regions: false,
+            corsLines: false,
+            stations: false
+        };
+        
+        function updateLoadingProgress() {
+            var progress = document.getElementById('loadingProgress');
+            var loaded = Object.values(dataLoadStatus).filter(v => v).length;
+            var total = Object.keys(dataLoadStatus).length;
+            
+            if (loaded < total) {
+                var percentage = Math.round((loaded / total) * 100);
+                var messages = ['Loading regions...', 'Loading CORS lines...', 'Loading stations...'];
+                progress.textContent = messages[loaded] || 'Loading... (' + percentage + '%)';
+            } else {
+                progress.textContent = '✓ All data loaded!';
+                setTimeout(function() {
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    setTimeout(function() {
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                    }, 500);
+                }, 300);
+                document.getElementById('filterInfo').textContent = '📍 Showing all stations';
+            }
+        }
+        
+        // Check if data is already loaded (scripts executed)
+        function checkDataLoaded() {
+            if (typeof json_GhanaAdminstrativeRegions_2 !== 'undefined') {
+                dataLoadStatus.regions = true;
+            }
+            if (typeof json_CORSNetworkDistanceInKm_3 !== 'undefined') {
+                dataLoadStatus.corsLines = true;
+            }
+            if (typeof json_GhanaCORStation_4 !== 'undefined') {
+                dataLoadStatus.stations = true;
+            }
+            updateLoadingProgress();
+        }
+        
+        // Check every 100ms for data
+        var dataCheckInterval = setInterval(function() {
+            checkDataLoaded();
+            if (dataLoadStatus.regions && dataLoadStatus.corsLines && dataLoadStatus.stations) {
+                clearInterval(dataCheckInterval);
+                // Data is ready, proceed with initialization
+                initializeMap();
+            }
+        }, 100);
+        
+        // ============================================
+        // MAP INITIALIZATION - Only runs when data is ready
+        // ============================================
+        function initializeMap() {
+            console.log('All data loaded, initializing map...');
+            
+            var map = L.map('map', {
+                zoomControl: false,
+                maxZoom: 28,
+                minZoom: 1
+            });
+            
+            // ============================================
+            // SET DEFAULT VIEW - GHANA
+            // ============================================
+            var ghanaBounds = [[4.5, -3.5], [11.5, 1.5]];
+            map.fitBounds(ghanaBounds);
+            
+            // Add zoom control at bottom right
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            
+            // ============================================
+            // ZOOM LEVELS
+            // ============================================
+            var STATION_VISIBILITY_ZOOM = 8;
+            
+            // ============================================
+            // VARIABLES
+            // ============================================
+            var userLocationMarker = null;
+            var currentUserLocation = null;
+            var isLocationFound = false;
+            
+            // Variables for placed point
+            var placedPointMarker = null;
+            var placedPointLine = null;
+            var placedPointLabel = null;
+            var placedPointNearestMarker = null;
+            var currentPlacedPoint = null;
+            var isPlacePointMode = false;
+            var isPointPlaced = false;
+            var isFindingNearest = false;
+            
+            // Variables for nearest results
+            var nearestMarker = null;
+            var nearestLine = null;
+            var nearestLabel = null;
+            var nearestCorsId = null;
+            var nearestSource = null;
+            var nearestDistance = null;
+            var nearestLocation = null;
+            var nearestRegion = null;
+            
+            // Flag to prevent map click from button clicks
+            var isButtonClick = false;
+            
+            // Legend state
+            var isLegendOpen = false;
+            
+            // Action buttons state
+            var isActionOpen = false;
+            
+            // ============================================
+            // LEGEND TOGGLE
+            // ============================================
+            document.getElementById('legendToggle').addEventListener('click', function(e) {
+                e.stopPropagation();
+                isLegendOpen = !isLegendOpen;
+                var legendContent = document.getElementById('legendContent');
+                var arrow = document.getElementById('legendArrow');
+                
+                if (isLegendOpen) {
+                    legendContent.classList.add('visible');
+                    arrow.classList.add('open');
+                    this.innerHTML = '<span class="icon">📍</span><span>Legend</span><span class="arrow open">▼</span>';
+                } else {
+                    legendContent.classList.remove('visible');
+                    arrow.classList.remove('open');
+                    this.innerHTML = '<span class="icon">📍</span><span>Legend</span><span class="arrow">▼</span>';
+                }
+            });
+            
+            // Close legend when clicking outside
+            document.addEventListener('click', function(e) {
+                var container = document.getElementById('legendContainer');
+                if (!container.contains(e.target) && isLegendOpen) {
+                    isLegendOpen = false;
+                    document.getElementById('legendContent').classList.remove('visible');
+                    document.getElementById('legendArrow').classList.remove('open');
+                    document.getElementById('legendToggle').innerHTML = '<span class="icon">📍</span><span>Legend</span><span class="arrow">▼</span>';
+                }
+            });
+            
+            // ============================================
+            // ACTION BUTTONS TOGGLE
+            // ============================================
+            document.getElementById('actionToggle').addEventListener('click', function(e) {
+                e.stopPropagation();
+                isActionOpen = !isActionOpen;
+                var actionButtons = document.getElementById('actionButtons');
+                var arrow = document.getElementById('actionArrow');
+                
+                if (isActionOpen) {
+                    actionButtons.classList.add('visible');
+                    arrow.classList.add('open');
+                    this.innerHTML = '<span class="icon">🛠️</span><span>Tools</span><span class="badge" id="actionBadge">!</span><span class="arrow open">▼</span>';
+                } else {
+                    actionButtons.classList.remove('visible');
+                    arrow.classList.remove('open');
+                    this.innerHTML = '<span class="icon">🛠️</span><span>Tools</span><span class="badge" id="actionBadge">!</span><span class="arrow">▼</span>';
+                }
+            });
+            
+            // Close action buttons when clicking outside
+            document.addEventListener('click', function(e) {
+                var container = document.getElementById('actionContainer');
+                if (!container.contains(e.target) && isActionOpen) {
+                    isActionOpen = false;
+                    document.getElementById('actionButtons').classList.remove('visible');
+                    document.getElementById('actionArrow').classList.remove('open');
+                    document.getElementById('actionToggle').innerHTML = '<span class="icon">🛠️</span><span>Tools</span><span class="badge" id="actionBadge">!</span><span class="arrow">▼</span>';
+                }
+            });
+            
+            // ============================================
+            // STATUS INDICATOR
+            // ============================================
+            function showStatus(message, icon, duration) {
+                var indicator = document.getElementById('statusIndicator');
+                var messageEl = document.getElementById('statusMessage');
+                var iconEl = indicator.querySelector('.status-icon');
+                
+                if (icon) {
+                    iconEl.textContent = icon;
+                }
+                messageEl.textContent = message;
+                indicator.classList.add('visible');
+                if (duration) {
+                    setTimeout(function() {
+                        indicator.classList.remove('visible');
+                    }, duration);
+                }
+            }
+            
+            function hideStatus() {
+                document.getElementById('statusIndicator').classList.remove('visible');
+            }
+            
+            // ============================================
+            // CLEAR ALL RESULTS
+            // ============================================
+            function clearAllResults() {
+                // Clear nearest markers
+                if (nearestMarker) {
+                    map.removeLayer(nearestMarker);
+                    nearestMarker = null;
+                }
+                if (nearestLine) {
+                    map.removeLayer(nearestLine);
+                    nearestLine = null;
+                }
+                if (nearestLabel) {
+                    map.removeLayer(nearestLabel);
+                    nearestLabel = null;
+                }
+                
+                // Reset station labels
+                stationLabelObjects.forEach(function(item) {
+                    var html = '<span style="color:#cc0000;font-weight:bold;font-size:7pt;text-shadow:0 0 6px rgba(255,255,255,0.95),0 0 12px rgba(255,255,255,0.8);">' + item.stationCo + '</span>';
+                    item.label.setContent(html);
+                    item.label.options.className = 'station-label';
+                    labelLayer.removeLayer(item.label);
+                    labelLayer.addLayer(item.label);
+                });
+                
+                document.getElementById('nearestResult').classList.remove('visible');
+                nearestCorsId = null;
+                nearestSource = null;
+                nearestDistance = null;
+                nearestLocation = null;
+                nearestRegion = null;
+                
+                // Update badge
+                updateBadge();
+            }
+            
+            // ============================================
+            // CLEAR PLACED POINT
+            // ============================================
+            function clearPlacedPoint() {
+                if (placedPointMarker) {
+                    map.removeLayer(placedPointMarker);
+                    placedPointMarker = null;
+                }
+                if (placedPointLine) {
+                    map.removeLayer(placedPointLine);
+                    placedPointLine = null;
+                }
+                if (placedPointLabel) {
+                    map.removeLayer(placedPointLabel);
+                    placedPointLabel = null;
+                }
+                if (placedPointNearestMarker) {
+                    map.removeLayer(placedPointNearestMarker);
+                    placedPointNearestMarker = null;
+                }
+                
+                currentPlacedPoint = null;
+                isPointPlaced = false;
+                
+                // Clear nearest results if they exist
+                clearAllResults();
+                updateButtons();
+                updateBadge();
+                
+                if (!isLocationFound) {
+                    document.getElementById('filterInfo').textContent = '📍 Place a point or use "My Location" to find nearest CORS';
+                }
+            }
+            
+            // ============================================
+            // UPDATE BUTTON STATES
+            // ============================================
+            function updateButtons() {
+                var hasPoint = isPointPlaced || isLocationFound;
+                document.getElementById('btnFindCORS').disabled = !hasPoint;
+                document.getElementById('btnClearAll').disabled = !hasPoint && !nearestMarker;
+                updateBadge();
+            }
+            
+            // ============================================
+            // UPDATE BADGE
+            // ============================================
+            function updateBadge() {
+                var badge = document.getElementById('actionBadge');
+                var hasPoint = isPointPlaced || isLocationFound;
+                var hasResult = nearestMarker !== null;
+                
+                if (hasPoint || hasResult) {
+                    badge.classList.add('visible');
+                    if (hasResult) {
+                        badge.textContent = '★';
+                    } else if (hasPoint) {
+                        badge.textContent = '●';
+                    }
+                } else {
+                    badge.classList.remove('visible');
+                }
+            }
+            
+            // ============================================
+            // FIND NEAREST CORS
+            // ============================================
+            function findNearestCORS() {
+                // Priority: placed point over location
+                var sourceLat, sourceLng, sourceType;
+                
+                if (isPointPlaced && currentPlacedPoint) {
+                    sourceLat = currentPlacedPoint.lat;
+                    sourceLng = currentPlacedPoint.lng;
+                    sourceType = 'Placed Point';
+                } else if (isLocationFound && currentUserLocation) {
+                    sourceLat = currentUserLocation.lat;
+                    sourceLng = currentUserLocation.lng;
+                    sourceType = 'Your Location';
+                } else {
+                    alert('Please place a point on the map or use "My Location" first.');
+                    return;
+                }
+                
+                if (isFindingNearest) return;
+                isFindingNearest = true;
+                
+                document.getElementById('filterInfo').textContent = '🎯 Finding nearest CORS from ' + sourceType + '...';
+                
+                var nearest = null;
+                var minDistance = Infinity;
+                
+                // Optimized: Use for loop for better performance
+                for (var i = 0; i < allStations.length; i++) {
+                    var station = allStations[i];
+                    var dist = calculateDistance(sourceLat, sourceLng, station.latlng.lat, station.latlng.lng);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearest = station;
+                    }
+                }
+                
+                if (nearest) {
+                    // Clear previous results
+                    clearAllResults();
+                    
+                    // Add nearest marker
+                    var nearestIcon = L.divIcon({
+                        className: 'gnss-marker',
+                        html: '<div class="gnss-icon-nearest"></div>',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    });
+                    
+                    nearestMarker = L.marker([nearest.latlng.lat, nearest.latlng.lng], {
+                        icon: nearestIcon,
+                        zIndexOffset: 2000
+                    }).addTo(map)
+                    .bindPopup('<b>📍 Nearest CORS </b><br>' +
+                               '<b>CORS ID:</b> ' + nearest.corsId + '<br>' +
+                               '<b>Location:</b> ' + nearest.location + '<br>' +
+                               '<b>Region:</b> ' + nearest.region + '<br>' +
+                               '<b>Distance:</b> ' + minDistance.toFixed(2) + ' km')
+                    .openPopup();
+                    
+                    // Draw line
+                    nearestLine = L.polyline([
+                        [sourceLat, sourceLng],
+                        [nearest.latlng.lat, nearest.latlng.lng]
+                    ], {
+                        color: '#00cc00',
+                        weight: 3,
+                        dashArray: '8, 6',
+                        opacity: 0.9
+                    }).addTo(map);
+                    
+                    // Add distance label
+                    var midLat = (sourceLat + nearest.latlng.lat) / 2;
+                    var midLng = (sourceLng + nearest.latlng.lng) / 2;
+                    
+                    var labelHtml = '<div style="background:rgba(0,204,0,0.15);border:2px solid #00cc00;border-radius:4px;padding:2px 8px;font-weight:bold;color:#008800;font-size:10pt;">' + 
+                                    '📍 ' + minDistance.toFixed(2) + ' km</div>';
+                    
+                    nearestLabel = L.marker([midLat, midLng], {
+                        icon: L.divIcon({
+                            className: 'distance-label',
+                            html: labelHtml,
+                            iconSize: [0, 0],
+                            iconAnchor: [0, 0]
+                        }),
+                        interactive: false,
+                        zIndexOffset: 1500
+                    }).addTo(map);
+                    
+                    // Show result - using CORS ID as the main name
+                    nearestCorsId = nearest.corsId;
+                    nearestSource = sourceType;
+                    nearestDistance = minDistance;
+                    nearestLocation = nearest.location;
+                    nearestRegion = nearest.region;
+                    
+                    document.getElementById('nearestName').textContent = nearest.corsId;
+                    document.getElementById('nearestDistance').textContent = minDistance.toFixed(2) + ' km away';
+                    document.getElementById('nearestDetail').textContent = nearest.location;
+                    document.getElementById('nearestSource').textContent = '📍 From: ' + sourceType;
+                    document.getElementById('nearestResult').classList.add('visible');
+                    
+                    // Update station labels - highlight the nearest station by Station Co
+                    for (var j = 0; j < stationLabelObjects.length; j++) {
+                        var item = stationLabelObjects[j];
+                        if (item.stationCo === nearest.stationCo) {
+                            var html = '<span style="color:#008800;font-weight:bold;font-size:8pt;background:rgba(0,255,0,0.15);padding:2px 8px;border-radius:4px;border:1px solid #00ff00;">🌟 ' + item.stationCo + ' (Nearest)</span>';
+                            item.label.setContent(html);
+                            item.label.options.className = 'station-label-nearest';
+                            labelLayer.removeLayer(item.label);
+                            labelLayer.addLayer(item.label);
+                            break;
+                        }
+                    }
+                    
+                    document.getElementById('filterInfo').textContent = '📍 Nearest CORS from ' + sourceType + ': ' + nearest.corsId + ' (' + minDistance.toFixed(2) + ' km)';
+                    
+                    // Zoom to show both points
+                    var bounds = L.latLngBounds([
+                        [sourceLat, sourceLng],
+                        [nearest.latlng.lat, nearest.latlng.lng]
+                    ]);
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+                } else {
+                    document.getElementById('filterInfo').textContent = '📍 No CORS stations found';
+                }
+                
+                isFindingNearest = false;
+                updateButtons();
+                updateBadge();
+            }
+            
+            // ============================================
+            // CALCULATE DISTANCE (Haversine formula)
+            // ============================================
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                var R = 6371;
+                var dLat = (lat2 - lat1) * Math.PI / 180;
+                var dLon = (lon2 - lon1) * Math.PI / 180;
+                var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+            
+            // ============================================
+            // MEASURE TOOL - METRIC WITH AREA
+            // ============================================
+            var measureControl = new L.Control.Measure({
+                position: 'bottomright',
+                primaryLengthUnit: 'meters',
+                secondaryLengthUnit: 'kilometers',
+                primaryAreaUnit: 'sqmeters',
+                secondaryAreaUnit: 'hectares',
+                activeColor: '#f42906',
+                completedColor: '#2e86c1'
+            });
+            
+            var originalAddTo = measureControl.addTo;
+            measureControl.addTo = function(map) {
+                originalAddTo.call(this, map);
+                
+                var self = this;
+                var originalUpdate = this._update;
+                this._update = function() {
+                    originalUpdate.call(this);
+                    
+                    var results = this._container.querySelector('.leaflet-control-measure-results');
+                    if (results) {
+                        var areaGroups = results.querySelectorAll('.group');
+                        for (var i = 0; i < areaGroups.length; i++) {
+                            var group = areaGroups[i];
+                            var label = group.querySelector('.label');
+                            if (label && label.textContent === 'Area') {
+                                var valueEl = group.querySelector('.value');
+                                if (valueEl) {
+                                    var sqm = parseFloat(valueEl.textContent.replace(/,/g, ''));
+                                    if (!isNaN(sqm)) {
+                                        var hectares = sqm / 10000;
+                                        var acres = sqm / 4046.86;
+                                        
+                                        var acresRow = document.createElement('div');
+                                        acresRow.className = 'group';
+                                        acresRow.innerHTML = '<span class="label">Acres</span> <span class="value">' + acres.toFixed(2) + ' ac</span>';
+                                        group.parentNode.insertBefore(acresRow, group.nextSibling);
+                                        
+                                        var hectaresRow = document.createElement('div');
+                                        hectaresRow.className = 'group';
+                                        hectaresRow.innerHTML = '<span class="label">Hectares</span> <span class="value">' + hectares.toFixed(2) + ' ha</span>';
+                                        group.parentNode.insertBefore(hectaresRow, group.nextSibling);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                return this;
+            };
+            
+            measureControl.addTo(map);
+            
+            setTimeout(function() {
+                var toggleBtn = document.querySelector('.leaflet-control-measure-toggle');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '📏';
+                    toggleBtn.style.fontSize = '16px';
+                    toggleBtn.style.padding = '6px 10px';
+                }
+            }, 500);
+            
+            // ============================================
+            // BASEMAP LAYERS
+            // ============================================
+            
+            var layer_EsriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Esri',
+                minZoom: 1,
+                maxZoom: 19
+            });
+            
+            var layer_OSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'OpenStreetMap',
+                minZoom: 1,
+                maxZoom: 19
+            });
+            
+            layer_OSM.addTo(map);
+            
+            // ============================================
+            // CREATE PERMANENT LABELS
+            // ============================================
+            
+            var labelLayer = L.layerGroup().addTo(map);
+            
+            function createPermanentLabel(latlng, html, className) {
+                var tooltip = L.tooltip({
+                    permanent: true,
+                    direction: 'center',
+                    className: className,
+                    offset: [0, 0],
+                    interactive: false,
+                    opacity: 1
+                })
+                .setLatLng(latlng)
+                .setContent(html)
+                .addTo(labelLayer);
+                
+                return tooltip;
+            }
+            
+            // ============================================
+            // CUSTOM GNSS ICON
+            // ============================================
+            function createGNSSIcon(selected) {
+                var className = selected ? 'gnss-icon-selected' : 'gnss-icon';
+                var html = '<div class="' + className + '"></div>';
+                var size = selected ? [32, 32] : [24, 24];
+                var anchor = selected ? [16, 16] : [12, 12];
+                return L.divIcon({
+                    className: 'gnss-marker',
+                    html: html,
+                    iconSize: size,
+                    iconAnchor: anchor,
+                    popupAnchor: [0, -16]
+                });
+            }
+            
+            // ============================================
+            // LOAD ADMINISTRATIVE REGIONS
+            // ============================================
+            
+            var regionLayer = L.geoJson(json_GhanaAdminstrativeRegions_2, {
+                style: {
+                    color: '#2e86c1',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0,
+                    dashArray: '5, 5'
+                },
+                interactive: false
+            }).addTo(map);
+            
+            // ============================================
+            // LOAD CORS STATIONS - USING STATION Co FOR MAP LABELS, CORS ID FOR POPUPS
+            // ============================================
+            
+            var allStations = [];
+            var selectedCorsId = null;
+            var stationMarkers = [];
+            var stationLabelObjects = [];
+            
+            // Use feature caching for better performance
+            var stationLayer = L.geoJson(json_GhanaCORStation_4, {
+                pointToLayer: function(feature, latlng) {
+                    var marker = L.marker(latlng, {
+                        icon: createGNSSIcon(false)
+                    });
+                    
+                    // Extract ALL station data
+                    var corsId = feature.properties['CORS ID'] || '';
+                    var stationId = feature.properties['Station ID'] || '';
+                    var stationCo = feature.properties['Station Co'] || '';
+                    var location = feature.properties['Location'] || '';
+                    var region = feature.properties['Region'] || '';
+                    
+                    allStations.push({
+                        feature: feature,
+                        marker: marker,
+                        latlng: latlng,
+                        region: region,
+                        location: location,
+                        corsId: corsId,
+                        stationId: stationId,
+                        stationCo: stationCo
+                    });
+                    stationMarkers.push(marker);
+                    
+                    return marker;
+                },
+                onEachFeature: function(feature, layer) {
+                    var corsId = feature.properties['CORS ID'] || '';
+                    var location = feature.properties['Location'] || '';
+                    var region = feature.properties['Region'] || '';
+                    
+                    var popupContent = '<div style="min-width:220px;">' +
+                        '<h4 style="margin:0 0 6px 0;font-size:13px;color:#1a5276;border-bottom:1px solid #eee;padding-bottom:4px;">📡 CORS Station</h4>' +
+                        '<table style="width:100%;font-size:11px;border-collapse:collapse;">';
+                    
+                    popupContent += '<tr>' +
+                        '<td style="font-weight:bold;padding:2px 6px;color:#555;white-space:nowrap;">CORS ID</td>' +
+                        '<td style="padding:2px 6px;font-weight:bold;color:#1a5276;">' + corsId + '</td>' +
+                        '</tr>';
+                    
+                    if (location) {
+                        popupContent += '<tr>' +
+                            '<td style="font-weight:bold;padding:2px 6px;color:#555;white-space:nowrap;">Location</td>' +
+                            '<td style="padding:2px 6px;">' + location + '</td>' +
+                            '</tr>';
+                    }
+                    
+                    if (region) {
+                        popupContent += '<tr>' +
+                            '<td style="font-weight:bold;padding:2px 6px;color:#555;white-space:nowrap;">Region</td>' +
+                            '<td style="padding:2px 6px;">' + region + '</td>' +
+                            '</tr>';
+                    }
+                    
+                    var lat = feature.geometry.coordinates[1];
+                    var lng = feature.geometry.coordinates[0];
+                    popupContent += '<tr>' +
+                        '<td style="font-weight:bold;padding:2px 6px;color:#555;white-space:nowrap;">Latitude</td>' +
+                        '<td style="padding:2px 6px;">' + lat.toFixed(6) + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                        '<td style="font-weight:bold;padding:2px 6px;color:#555;white-space:nowrap;">Longitude</td>' +
+                        '<td style="padding:2px 6px;">' + lng.toFixed(6) + '</td>' +
+                        '</tr>';
+                    
+                    popupContent += '</table></div>';
+                    layer.bindPopup(popupContent, { maxHeight: 280, maxWidth: 340 });
+                }
+            }).addTo(map);
+            
+            // Create permanent labels using Station Co (short code) on the map
+            stationLayer.eachLayer(function(layer) {
+                var stationCo = layer.feature.properties['Station Co'] || '';
+                var corsId = layer.feature.properties['CORS ID'] || '';
+                var latlng = layer.getLatLng();
+                
+                if (stationCo && latlng) {
+                    var html = '<span style="color:#cc0000;font-weight:bold;font-size:7pt;text-shadow:0 0 6px rgba(255,255,255,0.95),0 0 12px rgba(255,255,255,0.8);">' + stationCo + '</span>';
+                    var label = createPermanentLabel(
+                        [latlng.lat, latlng.lng],
+                        html,
+                        'station-label'
+                    );
+                    stationLabelObjects.push({
+                        label: label,
+                        feature: layer.feature,
+                        latlng: latlng,
+                        stationCo: stationCo,
+                        corsId: corsId
+                    });
+                }
+            });
+            
+            function updateStationLabels(selectedStationCo) {
+                for (var i = 0; i < stationLabelObjects.length; i++) {
+                    var item = stationLabelObjects[i];
+                    var isSelected = item.stationCo === selectedStationCo;
+                    var html;
+                    if (isSelected) {
+                        html = '<span style="color:#ff2200;font-weight:bold;font-size:9pt;text-shadow:0 0 8px rgba(255,34,0,0.4),0 0 16px rgba(255,255,255,0.9);">⭐ ' + item.stationCo + '</span>';
+                        item.label.setContent(html);
+                        item.label.options.className = 'station-label-selected';
+                    } else {
+                        html = '<span style="color:#cc0000;font-weight:bold;font-size:7pt;text-shadow:0 0 6px rgba(255,255,255,0.95),0 0 12px rgba(255,255,255,0.8);">' + item.stationCo + '</span>';
+                        item.label.setContent(html);
+                        item.label.options.className = 'station-label';
+                    }
+                    labelLayer.removeLayer(item.label);
+                    labelLayer.addLayer(item.label);
+                }
+            }
+            
+            function updateStationVisibility() {
+                var zoom = map.getZoom();
+                var showStations = zoom >= STATION_VISIBILITY_ZOOM;
+                
+                for (var i = 0; i < stationMarkers.length; i++) {
+                    var marker = stationMarkers[i];
+                    if (showStations) {
+                        if (!map.hasLayer(marker)) {
+                            map.addLayer(marker);
+                        }
+                    } else {
+                        if (map.hasLayer(marker)) {
+                            map.removeLayer(marker);
+                        }
+                    }
+                }
+                
+                for (var j = 0; j < stationLabelObjects.length; j++) {
+                    var item = stationLabelObjects[j];
+                    if (showStations) {
+                        labelLayer.addLayer(item.label);
+                    } else {
+                        labelLayer.removeLayer(item.label);
+                    }
+                }
+                
+                var visibleCount = showStations ? allStations.length : 0;
+                var totalCount = allStations.length;
+                var infoText = '📍 ';
+                if (showStations) {
+                    infoText += 'Showing ' + visibleCount + ' of ' + totalCount + ' stations';
+                    var region = document.getElementById('regionFilter').value;
+                    var station = document.getElementById('stationFilter').value;
+                    if (region !== 'all') {
+                        infoText += ' in ' + region;
+                    }
+                    if (station !== 'all') {
+                        infoText += ' • ' + station;
+                    }
+                } else {
+                    infoText += 'Zoom in to zoom level ' + STATION_VISIBILITY_ZOOM + ' to see CORS stations';
+                }
+                document.getElementById('filterInfo').textContent = infoText;
+            }
+            
+            // ============================================
+            // LOAD CORS NETWORK LINES
+            // ============================================
+            
+            var previouslyClickedLine = null;
+            
+            function styleCORSLine(feature) {
+                return {
+                    color: '#f42906',
+                    weight: 2.5,
+                    opacity: 0.7,
+                    fillOpacity: 0,
+                    smoothFactor: 1
+                };
+            }
+            
+            function styleClickedLine(feature) {
+                return {
+                    color: '#ffd700',
+                    weight: 4,
+                    opacity: 1,
+                    fillOpacity: 0,
+                    smoothFactor: 1
+                };
+            }
+            
+            var corsLayer = L.geoJson(json_CORSNetworkDistanceInKm_3, {
+                style: styleCORSLine,
+                interactive: true,
+                onEachFeature: function(feature, layer) {
+                    var distance = feature.properties['Dist-Km'];
+                    
+                    var cleanDistance = distance;
+                    if (typeof distance === 'string') {
+                        cleanDistance = distance.replace(/km/gi, '').trim();
+                    }
+                    
+                    var tooltipContent = '<span style="font-size:11pt;">📏 <b>' + cleanDistance + ' km</b></span>';
+                    
+                    layer.bindTooltip(tooltipContent, {
+                        permanent: false,
+                        direction: 'top',
+                        className: 'distance-tooltip',
+                        offset: [0, -6],
+                        interactive: false,
+                        sticky: true
+                    });
+                    
+                    layer.on('click', function(e) {
+                        if (previouslyClickedLine) {
+                            previouslyClickedLine.setStyle(styleCORSLine(previouslyClickedLine.feature));
+                        }
+                        
+                        this.setStyle(styleClickedLine(feature));
+                        previouslyClickedLine = this;
+                        
+                        var popupContent = 
+                            '<h4 style="margin:0 0 2px 0;font-size:11px;color:#f42906;">📏 CORS Connection</h4>' +
+                            '<div class="distance-display">' + cleanDistance + ' km</div>' +
+                            '<div class="sub-text">Click another line to change</div>';
+                        
+                        this.bindPopup(popupContent, { 
+                            maxHeight: 150, 
+                            maxWidth: 160,
+                            className: 'click-popup'
+                        }).openPopup();
+                    });
+                    
+                    layer.on({
+                        mouseover: function(e) {
+                            if (this !== previouslyClickedLine) {
+                                this.setStyle({
+                                    color: '#ff6b6b',
+                                    weight: 3.5,
+                                    opacity: 1
+                                });
+                            }
+                            this.openTooltip();
+                        },
+                        mouseout: function(e) {
+                            if (this !== previouslyClickedLine) {
+                                this.setStyle(styleCORSLine(feature));
+                            }
+                            this.closeTooltip();
+                        }
+                    });
+                }
+            }).addTo(map);
+            
+            // ============================================
+            // FILTER FUNCTIONALITY
+            // ============================================
+            
+            function populateRegionDropdown() {
+                var regions = new Set();
+                for (var i = 0; i < allStations.length; i++) {
+                    var station = allStations[i];
+                    if (station.region) {
+                        regions.add(station.region);
+                    }
+                }
+                
+                var regionSelect = document.getElementById('regionFilter');
+                var sortedRegions = Array.from(regions).sort();
+                for (var j = 0; j < sortedRegions.length; j++) {
+                    var option = document.createElement('option');
+                    option.value = sortedRegions[j];
+                    option.textContent = sortedRegions[j];
+                    regionSelect.appendChild(option);
+                }
+            }
+            
+            function updateStationDropdown(region) {
+                var stationSelect = document.getElementById('stationFilter');
+                stationSelect.innerHTML = '<option value="all">All</option>';
+                
+                var stations = allStations;
+                if (region !== 'all') {
+                    stations = [];
+                    for (var i = 0; i < allStations.length; i++) {
+                        if (allStations[i].region === region) {
+                            stations.push(allStations[i]);
+                        }
+                    }
+                }
+                
+                stations.sort(function(a, b) {
+                    return a.corsId.localeCompare(b.corsId);
+                });
+                
+                for (var j = 0; j < stations.length; j++) {
+                    var option = document.createElement('option');
+                    option.value = stations[j].corsId;
+                    option.textContent = stations[j].corsId;
+                    stationSelect.appendChild(option);
+                }
+            }
+            
+            function zoomToStation(corsId) {
+                var station = null;
+                for (var i = 0; i < allStations.length; i++) {
+                    if (allStations[i].corsId === corsId) {
+                        station = allStations[i];
+                        break;
+                    }
+                }
+                
+                if (station) {
+                    for (var j = 0; j < allStations.length; j++) {
+                        if (allStations[j].corsId === selectedCorsId) {
+                            allStations[j].marker.setIcon(createGNSSIcon(false));
+                        }
+                    }
+                    
+                    selectedCorsId = corsId;
+                    station.marker.setIcon(createGNSSIcon(true));
+                    updateStationLabels(station.stationCo);
+                    
+                    map.flyTo([station.latlng.lat, station.latlng.lng], 16, {
+                        duration: 1.2
+                    });
+                    
+                    setTimeout(function() {
+                        station.marker.openPopup();
+                    }, 300);
+                }
+            }
+            
+            function applyFilter() {
+                var region = document.getElementById('regionFilter').value;
+                var station = document.getElementById('stationFilter').value;
+                
+                if (station !== 'all') {
+                    zoomToStation(station);
+                } else {
+                    if (selectedCorsId) {
+                        var prevStation = null;
+                        for (var i = 0; i < allStations.length; i++) {
+                            if (allStations[i].corsId === selectedCorsId) {
+                                prevStation = allStations[i];
+                                break;
+                            }
+                        }
+                        if (prevStation) {
+                            prevStation.marker.setIcon(createGNSSIcon(false));
+                        }
+                        selectedCorsId = null;
+                        updateStationLabels(null);
+                    }
+                }
+                
+                var zoom = map.getZoom();
+                var showStations = zoom >= STATION_VISIBILITY_ZOOM;
+                
+                for (var j = 0; j < allStations.length; j++) {
+                    var s = allStations[j];
+                    var show = showStations;
+                    
+                    if (show) {
+                        if (region !== 'all' && s.region !== region) {
+                            show = false;
+                        }
+                        if (station !== 'all' && s.corsId !== station) {
+                            show = false;
+                        }
+                    }
+                    
+                    if (show) {
+                        if (!map.hasLayer(s.marker)) {
+                            map.addLayer(s.marker);
+                        }
+                    } else {
+                        if (map.hasLayer(s.marker)) {
+                            map.removeLayer(s.marker);
+                        }
+                    }
+                }
+                
+                for (var k = 0; k < stationLabelObjects.length; k++) {
+                    var item = stationLabelObjects[k];
+                    if (showStations) {
+                        labelLayer.addLayer(item.label);
+                    } else {
+                        labelLayer.removeLayer(item.label);
+                    }
+                }
+                
+                var visibleCount = showStations ? 0 : 0;
+                if (showStations) {
+                    for (var m = 0; m < allStations.length; m++) {
+                        if (map.hasLayer(allStations[m].marker)) {
+                            visibleCount++;
+                        }
+                    }
+                }
+                
+                var infoText = '📍 ';
+                if (showStations) {
+                    infoText += 'Showing ' + visibleCount + ' of ' + allStations.length + ' stations';
+                    if (region !== 'all') {
+                        infoText += ' in ' + region;
+                    }
+                    if (station !== 'all') {
+                        infoText += ' • ' + station;
+                    }
+                } else {
+                    infoText += 'Zoom in to zoom level ' + STATION_VISIBILITY_ZOOM + ' to see CORS stations';
+                }
+                document.getElementById('filterInfo').textContent = infoText;
+            }
+            
+            // ============================================
+            // UPDATE ALL VISIBILITY
+            // ============================================
+            function updateAllVisibility() {
+                updateStationVisibility();
+            }
+            
+            // ============================================
+            // SETUP EVENT LISTENERS
+            // ============================================
+            
+            map.on('zoomend', function() {
+                updateAllVisibility();
+            });
+            
+            document.getElementById('regionFilter').addEventListener('change', function() {
+                var region = this.value;
+                updateStationDropdown(region);
+                document.getElementById('stationFilter').value = 'all';
+                applyFilter();
+            });
+            
+            document.getElementById('stationFilter').addEventListener('change', function() {
+                applyFilter();
+            });
+            
+            document.getElementById('clearFilter').addEventListener('click', function() {
+                document.getElementById('regionFilter').value = 'all';
+                updateStationDropdown('all');
+                document.getElementById('stationFilter').value = 'all';
+                
+                if (selectedCorsId) {
+                    var prevStation = null;
+                    for (var i = 0; i < allStations.length; i++) {
+                        if (allStations[i].corsId === selectedCorsId) {
+                            prevStation = allStations[i];
+                            break;
+                        }
+                    }
+                    if (prevStation) {
+                        prevStation.marker.setIcon(createGNSSIcon(false));
+                    }
+                    selectedCorsId = null;
+                    updateStationLabels(null);
+                }
+                
+                // Clear user location
+                if (userLocationMarker) {
+                    map.removeLayer(userLocationMarker);
+                    userLocationMarker = null;
+                }
+                currentUserLocation = null;
+                isLocationFound = false;
+                
+                // Clear placed point
+                clearPlacedPoint();
+                disablePlacePointMode();
+                
+                // Clear all results
+                clearAllResults();
+                updateButtons();
+                updateBadge();
+                
+                applyFilter();
+                
+                if (previouslyClickedLine) {
+                    previouslyClickedLine.setStyle(styleCORSLine(previouslyClickedLine.feature));
+                    previouslyClickedLine = null;
+                }
+            });
+            
+            // ============================================
+            // PLACE POINT MODE
+            // ============================================
+            function enablePlacePointMode() {
+                isPlacePointMode = true;
+                document.getElementById('btnPlacePoint').classList.add('active');
+                document.getElementById('btnPlacePoint').innerHTML = '<span class="icon">✕</span> Cancel';
+                map.getContainer().classList.add('place-point-mode');
+                showStatus('Click anywhere on the map to place a point', '📍', 0);
+                document.getElementById('filterInfo').textContent = '📍 Click anywhere on the map to place a point';
+            }
+            
+            function disablePlacePointMode() {
+                isPlacePointMode = false;
+                document.getElementById('btnPlacePoint').classList.remove('active');
+                document.getElementById('btnPlacePoint').innerHTML = '<span class="icon">📍</span> Place Point';
+                map.getContainer().classList.remove('place-point-mode');
+                hideStatus();
+                if (!isPointPlaced && !isLocationFound) {
+                    document.getElementById('filterInfo').textContent = '📍 Place a point or use "My Location" to find nearest CORS';
+                }
+            }
+            
+            // ============================================
+            // BUTTON EVENT LISTENERS
+            // ============================================
+            
+            // Place Point Button
+            document.getElementById('btnPlacePoint').addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                isButtonClick = true;
+                
+                if (isPlacePointMode) {
+                    disablePlacePointMode();
+                    clearPlacedPoint();
+                } else {
+                    clearPlacedPoint();
+                    enablePlacePointMode();
+                }
+                updateButtons();
+                updateBadge();
+                
+                setTimeout(function() {
+                    isButtonClick = false;
+                }, 100);
+            });
+            
+            // My Location Button
+            document.getElementById('btnMyLocation').addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                isButtonClick = true;
+                
+                if ("geolocation" in navigator) {
+                    showStatus('Getting your location...', '📡', 0);
+                    document.getElementById('filterInfo').textContent = '📍 Getting your location...';
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            var lat = position.coords.latitude;
+                            var lng = position.coords.longitude;
+                            currentUserLocation = { lat: lat, lng: lng };
+                            isLocationFound = true;
+                            
+                            map.flyTo([lat, lng], 15, {
+                                duration: 2
+                            });
+                            
+                            if (userLocationMarker) {
+                                map.removeLayer(userLocationMarker);
+                            }
+                            
+                            var userIcon = L.divIcon({
+                                className: 'user-location',
+                                html: '<div class="user-location-icon"></div>',
+                                iconSize: [16, 16],
+                                iconAnchor: [8, 8]
+                            });
+                            
+                            userLocationMarker = L.marker([lat, lng], {
+                                icon: userIcon,
+                                zIndexOffset: 1000
+                            }).addTo(map)
+                            .bindPopup('📍 You are here')
+                            .openPopup();
+                            
+                            showStatus('Location found! Click "Find CORS" to find nearest station', '✅', 3000);
+                            document.getElementById('filterInfo').textContent = '📍 Location found! Click "Find CORS" to find nearest station';
+                            updateButtons();
+                            updateBadge();
+                        },
+                        function(error) {
+                            console.log('Geolocation error:', error.message);
+                            hideStatus();
+                            var msg = 'Unable to get your location. ';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    msg += 'Please allow location access in your browser settings.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    msg += 'Location information is unavailable.';
+                                    break;
+                                case error.TIMEOUT:
+                                    msg += 'Location request timed out. Please try again.';
+                                    break;
+                                default:
+                                    msg += 'Please try again.';
+                            }
+                            document.getElementById('filterInfo').textContent = '📍 ' + msg;
+                            alert(msg);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+                
+                setTimeout(function() {
+                    isButtonClick = false;
+                }, 100);
+            });
+            
+            // Find CORS Button
+            document.getElementById('btnFindCORS').addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                isButtonClick = true;
+                findNearestCORS();
+                setTimeout(function() {
+                    isButtonClick = false;
+                }, 100);
+            });
+            
+            // Clear All Button
+            document.getElementById('btnClearAll').addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                isButtonClick = true;
+                
+                if (userLocationMarker) {
+                    map.removeLayer(userLocationMarker);
+                    userLocationMarker = null;
+                }
+                currentUserLocation = null;
+                isLocationFound = false;
+                
+                clearPlacedPoint();
+                if (isPlacePointMode) {
+                    disablePlacePointMode();
+                }
+                
+                clearAllResults();
+                updateButtons();
+                updateBadge();
+                
+                document.getElementById('filterInfo').textContent = '📍 Everything cleared. Place a point or use "My Location" to find nearest CORS';
+                showStatus('All cleared', '🗑️', 2000);
+                
+                setTimeout(function() {
+                    isButtonClick = false;
+                }, 100);
+            });
+            
+            // Close Result Button
+            document.getElementById('closeResult').addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                isButtonClick = true;
+                
+                clearAllResults();
+                updateButtons();
+                updateBadge();
+                if (!isPointPlaced && !isLocationFound) {
+                    document.getElementById('filterInfo').textContent = '📍 Place a point or use "My Location" to find nearest CORS';
+                }
+                
+                setTimeout(function() {
+                    isButtonClick = false;
+                }, 100);
+            });
+            
+            // ============================================
+            // MAP CLICK HANDLER FOR PLACE POINT MODE
+            // ============================================
+            map.on('click', function(e) {
+                if (isButtonClick) {
+                    return;
+                }
+                
+                if (isPlacePointMode) {
+                    var lat = e.latlng.lat;
+                    var lng = e.latlng.lng;
+                    
+                    clearPlacedPoint();
+                    clearAllResults();
+                    
+                    var pointIcon = L.divIcon({
+                        className: 'placed-point',
+                        html: '<div class="placed-point-icon"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                    
+                    placedPointMarker = L.marker([lat, lng], {
+                        icon: pointIcon,
+                        zIndexOffset: 1000
+                    }).addTo(map)
+                    .bindPopup('📍 Point placed at:<br>' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '<br>Click "Find CORS" to find nearest station')
+                    .openPopup();
+                    
+                    currentPlacedPoint = { lat: lat, lng: lng };
+                    isPointPlaced = true;
+                    
+                    disablePlacePointMode();
+                    updateButtons();
+                    updateBadge();
+                    
+                    document.getElementById('filterInfo').textContent = '📍 Point placed at ' + lat.toFixed(4) + ', ' + lng.toFixed(4) + '. Click "Find CORS" to find nearest station';
+                    showStatus('Point placed! Click "Find CORS"', '✅', 3000);
+                }
+            });
+            
+            // Prevent click propagation from action buttons
+            document.getElementById('actionButtons').addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // ============================================
+            // LAYER CONTROL
+            // ============================================
+            
+            var overlaysTree = [
+                { label: '📡 CORS Stations', layer: stationLayer },
+                { label: '🔗 CORS Network Lines', layer: corsLayer },
+                { label: '🗺️ Administrative Regions', layer: regionLayer },
+                { label: '🗺️ OpenStreetMap', layer: layer_OSM, radioGroup: 'basemap' },
+                { label: '🛰️ Esri Satellite', layer: layer_EsriSatellite, radioGroup: 'basemap' }
+            ];
+            
+            var layerControl = L.control.layers.tree(null, overlaysTree, {
+                collapsed: true,
+                position: 'topright'
+            }).addTo(map);
+            
+            // ============================================
+            // INITIALIZE
+            // ============================================
+            
+            populateRegionDropdown();
+            updateStationDropdown('all');
+            
+            setTimeout(function() {
+                updateAllVisibility();
+            }, 100);
+            
+            // ============================================
+            // HANDLE RESIZE
+            // ============================================
+            
+            map.invalidateSize();
+            
+            console.log('✅ CORS Map - Initialized successfully');
+            console.log('Total stations loaded:', allStations.length);
+            console.log('Stations visible at zoom level >=', STATION_VISIBILITY_ZOOM);
+            console.log('🚀 Optimizations applied:');
+            console.log('  - Async data loading with progress indicator');
+            console.log('  - For loops instead of forEach for better performance');
+            console.log('  - Cached feature lookups');
+            console.log('  - Lazy rendering of station labels');
+            console.log('  - Optimized DOM updates');
+        }
+        
+        // Start checking for data immediately
+        checkDataLoaded();
+        </script>
+    </body>
+</html>
